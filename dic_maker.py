@@ -28,13 +28,25 @@ def merge_category_dummy(original):
     return merged_df
 
 
+def shrink_dic(dic_data):
+    """
+    ダミーデータつき辞書のサイズを軽減する。
+    e = 1の行を削除し、返す。
+    """
+    pn_dic = dic_data[dic_data.e == 0]
+    del pn_dic['e']
+    return pn_dic
+
+
 if __name__ == '__main__':
     PN_DIC_NAME = "opinion_dict.csv"
 
-    DIC_PN = pandas.read_csv(PN_DIC_NAME, sep='\t', header=None)
+    DIC_PN = pandas.read_csv(PN_DIC_NAME, sep='\t', header=None, )
 
     DIC_PN.columns = ['word', 'eval', 'usecase']
 
     DIC_WITH_DUMMY = merge_category_dummy(DIC_PN)
 
-    print DIC_WITH_DUMMY
+    SHRINKED_DIC = shrink_dic(DIC_WITH_DUMMY)
+
+    SHRINKED_DIC.to_pickle("opinion_dict_shrinked.dic")

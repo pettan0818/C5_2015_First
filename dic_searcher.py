@@ -29,11 +29,20 @@ class OpinionDictSearcher(object):
     -1
     >>> searcher.tell_word_score("最高")
     1
+    >>> searcher.tell_word_score("日本人")
+    0
     """
     def __init__(self, dic_name):
         self.dic = pandas.read_pickle(dic_name)
 
     def tell_word_score(self, word):
+        """
+        単語をもらって
+        辞書と照合し、
+        Positiveなら1を返す
+        Negativeなら-1を返す
+        未知語・中立語なら0を返す。
+        """
         score_base = self.dic.query('word == @word')
 
         dic_data_size = len(score_base.index)
@@ -43,10 +52,12 @@ class OpinionDictSearcher(object):
         elif dic_data_size == 1:
             return int(score_base['n'] * -1 + score_base['p'] * 1)
         else:
-            raise IndexError("I receive illegal data from dictionary")
+            return 0
+            raise IndexError("%s: I receive illegal data from dictionary" % word)
 
 
 
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
+
