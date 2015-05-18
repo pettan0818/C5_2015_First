@@ -1,7 +1,14 @@
+# 原則
 このプログラムは、
-@pettan0818が、独占的にコピーライトを保留しますが、
-評価辞書については、
- http://www.cl.ecei.tohoku.ac.jp/index.php?Open%20Resources%2FJapanese%20Sentiment%20Polarity%20Dictionary
- 日本語評価極性辞書(用言編)
- 日本語評価極性辞書(名詞編)
+以下の注記事項を除いて@pettan0818が、独占的にコピーライトを保留します。
+
+# 注記事項
+## 評価辞書
+http://www.cl.ecei.tohoku.ac.jp/index.php?Open%20Resources%2FJapanese%20Sentiment%20Polarity%20Dictionary
+* 日本語評価極性辞書(用言編) [#1]
+* 日本語評価極性辞書(名詞編) [#2]
 を活用しました。
+
+参考文献
+[#1] 小林のぞみ,乾健太郎,松本裕治,立石健二,福島俊一. 意見抽出のための評価表現の収集. 自然言語処理,Vol.12, No.3, pp.203-222, 2005.
+[#2] 東山昌彦, 乾健太郎, 松本裕治, 述語の選択選好性に着目した名詞評価極性の獲得, 言語処理学会第14回年次大会論文集, pp.584-587, 2008.
