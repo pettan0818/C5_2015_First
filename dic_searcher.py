@@ -43,6 +43,8 @@ class OpinionDictSearcher(object):
         Negativeなら-1を返す
         未知語・中立語なら0を返す。
         """
+        word = str(word)
+
         score_base = self.dic.query('word == @word')
 
         dic_data_size = len(score_base.index)
@@ -53,7 +55,7 @@ class OpinionDictSearcher(object):
             return int(score_base['n'] * -1 + score_base['p'] * 1)
         else:
             return 0
-            raise IndexError("%s: I receive illegal data from dictionary" % word)
+            #raise IndexError("%s: I receive illegal data from dictionary" % word)
 
 
 
