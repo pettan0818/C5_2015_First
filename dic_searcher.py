@@ -39,8 +39,8 @@ class OpinionDictSearcher(object):
         """
         単語をもらって
         辞書と照合し、
-        Positiveなら1を返す
-        Negativeなら-1を返す
+        Positiveなら1を返す。
+        Negativeなら-1を返す。
         未知語・中立語なら0を返す。
         """
         word = str(word)
