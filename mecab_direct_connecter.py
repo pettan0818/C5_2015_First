@@ -125,13 +125,27 @@ class MecabMother(object):
 
     def extracted_category_word(self, category):
         """
-        ジェネレータ(指定された1品詞で単語を抽出)
+        ジェネレータ(指定品詞で単語を抽出)
         """
+        category = list(category)
         # 結果を格納するリスト
         extracted_word = []
         # 指定された品詞を抽出する作業
         for i, word in enumerate(self.words):
-            if self.parts[i] == category:
+            if self.parts[i] in category:
+                extracted_word.append(word)
+        return extracted_word
+
+    def extract_category_originalshape(self, category):
+        """
+        ジェネレータ(指定品詞で単語を抽出)
+        """
+        category = list(category)
+        # 結果を格納するリスト
+        extracted_word = []
+        # 指定された品詞を抽出する作業
+        for i, word in enumerate(self.original_shape):
+            if self.parts[i] in category:
                 extracted_word.append(word)
         return extracted_word
 
