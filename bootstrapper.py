@@ -16,7 +16,6 @@
 
 import sys
 import mecab_direct_connecter
-import dic_reader
 
 
 if __name__ == '__main__':
@@ -31,14 +30,5 @@ if __name__ == '__main__':
 
     mecab_exe.unknown_word_buster_by_parts()
 
-    word_gen = mecab_exe.word_generator()
-
-    print word_gen.next()
-
-    print word_gen.next()
-
-    print word_gen.next()
-
-    for i in word_gen.next():
-        print i
+    TARGET_WORDS = mecab_exe.extract_category_originalshape(["名詞", "動詞"])
 
