@@ -1,0 +1,6 @@
+# Exclude Archived Files
+@Archived
+@Archived/*
+
+# Mac OS .DS_store
+.DS_Store
