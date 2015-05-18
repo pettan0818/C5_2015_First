@@ -4,3 +4,6 @@
 
 # Mac OS .DS_store
 .DS_Store
+
+# pyc is excluded.
+*.pyc
