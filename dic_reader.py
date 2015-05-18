@@ -29,7 +29,7 @@ def merge_category_dummy(original):
 
 
 if __name__ == '__main__':
-    PN_DIC_NAME = "pn.csv.m3.120408.trim"
+    PN_DIC_NAME = "opinion_dict.csv"
 
     DIC_PN = pandas.read_csv(PN_DIC_NAME, sep='\t', header=None)
 
