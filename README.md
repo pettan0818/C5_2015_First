@@ -9,6 +9,6 @@
 ## Usage
 ipython bootstrapper.py [Analytics File]
 
-Then this script will check dictionary and words.
-And opinion evaluation will appear.
-Finally Put sum of evaluation.
+* this script will check dictionary and words.
+* And opinion evaluation will appear.
+* Finally Put sum of evaluation.
