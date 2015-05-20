@@ -5,6 +5,7 @@
 * Pandas
 * Python Buindings Mecab
 * numexpr for pandas
+
 ## Usage
 > ipython bootstrapper.py [Analytics File]
 Then this script will check dictionary and words.
