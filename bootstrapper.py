@@ -35,9 +35,12 @@ if __name__ == '__main__':
 
         MECAB_EXE.unknown_word_buster_by_parts()
 
-        TARGET_WORDS = MECAB_EXE.extract_category_originalshape(["名詞", "動詞"])
+        TARGET_WORDS = MECAB_EXE.extract_category_originalshape(["名詞", "動詞", "形容詞"])
 
         opt_list = [WORD_OPINION_TELLER.tell_word_score(word) for word in TARGET_WORDS]
+
+
+        print opt_list
 
         FULL_EXP.append(sum(opt_list))
 
