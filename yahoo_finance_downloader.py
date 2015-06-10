@@ -18,12 +18,36 @@ import sys
 from bs4 import BeautifulSoup
 import urllib2
 
-url = sys.argv[1]
+def data_downloader(url):
+    """
+    """
+    pass
 
-site_data = BeautifulSoup(urllib2.urlopen(url))
+def url_generator_thread(seed_url):
+    """
+    """
+    pass
 
-comment_list = [x.text.strip().replace('\n','') for x in site_data.findAll("p", class_="comText")]
+def previous_url_parser(site_data):
+    """
+    """
+    pass
 
-for x in comment_list:
-    print x
+def comment_parser():
+    """
+    """
+    pass
+
+
+if __name__ == '__main__':
+    URL = sys.argv[1]
+
+    SITE_DATA = BeautifulSoup(urllib2.urlopen(URL))
+
+    COMMENT_LIST = [x.text.strip().replace('\n', '') for x in SITE_DATA.findAll("p", class_="comText")]
+
+    for x in COMMENT_LIST:
+        print x
+
+    print SITE_DATA.findAll("li", class_="prev")[0].a.get("href")
 
