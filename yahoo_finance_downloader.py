@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
         print NEXT_TARGET_URL
 
-        time.sleep(5)
+        time.sleep(10)
 
     cPickle.dump(COMMENT_RESULT, file("test.dump", 'w'))
 
