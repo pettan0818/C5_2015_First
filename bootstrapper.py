@@ -15,6 +15,7 @@
 """
 
 import sys
+import numpy
 import mecab_direct_connecter
 import dic_searcher
 
@@ -41,7 +42,8 @@ if __name__ == '__main__':
         opt_list = [WORD_OPINION_TELLER.tell_word_score(word) for word in TARGET_WORDS]
 
         print opt_list
+        print numpy.mean(opt_list)
 
-        FULL_EXP.append(sum(opt_list))
+        FULL_EXP.append(numpy.mean(opt_list))
 
-    print "Total Exp: %s" % str(sum(FULL_EXP))
+    print "Total Exp: %s" % str(sum(numpy.nan_to_num(FULL_EXP)))
