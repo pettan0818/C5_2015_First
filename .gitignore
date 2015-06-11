@@ -8,3 +8,4 @@
 # pyc is excluded.
 *.pyc
 *.list
+*.dump
