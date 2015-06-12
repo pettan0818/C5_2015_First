@@ -28,12 +28,21 @@ def data_downloader(target_url):
     return BeautifulSoup(urllib2.urlopen(target_url))
 
 
-def url_generator_thread(seed_num):
+def url_generator_without_thread(seed_num):
     """
+    [Deprecated.]
     >>> url_generator_thread("3318")
     'http://textream.yahoo.co.jp/message/1003318/3318'
     """
     return "http://textream.yahoo.co.jp/message/100" + seed_num + "/" + seed_num
+
+
+def url_generator_thread_plus(stock_num, thread_num):
+    """
+    スレッド番号と株式番号からTextreamのホームアドレスを作成
+    """
+    return "http://textream.yahoo.co.jp/message/100" + stock_num + "/" + stock_num + "/" + thread_num
+
 
 
 def previous_url_parser(site_data):
@@ -63,6 +72,13 @@ def output_file_maker(result_list, output_file_name):
     [output_con.writelines([line + '\n' for line in x]) for x in result_list]
 
 
+def main():
+    """
+    argparser対応を進めるのでメイン関数処理は、こちらに移行させる。
+    """
+    pass
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
@@ -72,7 +88,7 @@ if __name__ == '__main__':
     STOCK_NUM = sys.argv[1]
     OUTPUT_FILE_NAME = sys.argv[2]
 
-    SEED_URL = url_generator_thread(STOCK_NUM)
+    SEED_URL = url_generator_without_thread(STOCK_NUM)
 
     FIRST_DATA = data_downloader(SEED_URL)
 
