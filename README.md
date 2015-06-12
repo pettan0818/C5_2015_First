@@ -3,7 +3,7 @@
 * Mecab
 * Mecab Dictionary for Mecab in ~/mecab-ipadic-neologd/
 * Pandas
-* Python Buindings Mecab
+* Python Bindings Mecab
 * numexpr for pandas
 
 ## Usage
