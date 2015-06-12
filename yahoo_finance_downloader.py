@@ -17,6 +17,7 @@
 import sys
 import time
 import cPickle
+import pandas
 from bs4 import BeautifulSoup
 import urllib2
 
@@ -59,6 +60,12 @@ def comment_parser(site_data):
     ページ内の発言をパースしてリストにして返す。
     """
     comment_list = [x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]
+
+    contributed_time = [x.find("span").a.text for x in site_data.findAll("p", class_="comWriter")]
+
+    positive_vote = [x.a.span.text for x in sitedata.findAll("li", class_="positive")]
+
+    negative_vote = [x.a.span.text for x in sitedata.findAll("li", class_="negative")]
 
     return comment_list
 
