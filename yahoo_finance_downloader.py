@@ -30,7 +30,6 @@ def data_downloader(target_url):
 
 def url_generator_without_thread(seed_num):
     """
-    [Deprecated.]
     >>> url_generator_without_thread("3318")
     'http://textream.yahoo.co.jp/message/1003318/3318'
     """
@@ -76,42 +75,50 @@ def main():
     """
     argparser対応を進めるのでメイン関数処理は、こちらに移行させる。
     """
-    pass
+    comment_result = []
 
+    stock_num = sys.argv[1]
+    output_file_name = sys.argv[2]
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    seed_url = url_generator_without_thread(stock_num)
 
-    COMMENT_RESULT = []
+    first_data = data_downloader(seed_url)
 
-    STOCK_NUM = sys.argv[1]
-    OUTPUT_FILE_NAME = sys.argv[2]
+    comment_result.append(comment_parser(first_data))
 
-    SEED_URL = url_generator_without_thread(STOCK_NUM)
-
-    FIRST_DATA = data_downloader(SEED_URL)
-
-    COMMENT_RESULT.append(comment_parser(FIRST_DATA))
-
-    NEXT_TARGET_URL = previous_url_parser(FIRST_DATA)
+    next_target_url = previous_url_parser(first_data)
 
     while True:
-        SITE_DATA_IN_LOOP = data_downloader(NEXT_TARGET_URL)
+        site_data_in_loop = data_downloader(next_target_url)
 
-        COMMENT_RESULT.append(comment_parser(SITE_DATA_IN_LOOP))
+        comment_result.append(comment_parser(site_data_in_loop))
 
         try:
-            NEXT_TARGET_URL = previous_url_parser(SITE_DATA_IN_LOOP)
+            next_target_url = previous_url_parser(site_data_in_loop)
         except AttributeError:
             break
 
-        print COMMENT_RESULT
+        print comment_result
 
-        print NEXT_TARGET_URL
+        print next_target_url
 
         time.sleep(10)
 
-    cPickle.dump(COMMENT_RESULT, file("test.dump", 'w'))
+    cPickle.dump(comment_result, file("test.dump", 'w'))
 
-    output_file_maker(COMMENT_RESULT, OUTPUT_FILE_NAME)
+    output_file_maker(comment_result, output_file_name)
+
+
+def debug():
+    """
+    Doctestを走らせるための関数
+    ArgParseで--debugオプション時に発動。
+    """
+    import doctest
+    doctest.testmod()
+
+
+if __name__ == '__main__':
+    import argparse
+
+    main()
