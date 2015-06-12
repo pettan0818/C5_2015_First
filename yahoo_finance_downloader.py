@@ -31,7 +31,7 @@ def data_downloader(target_url):
 def url_generator_without_thread(seed_num):
     """
     [Deprecated.]
-    >>> url_generator_thread("3318")
+    >>> url_generator_without_thread("3318")
     'http://textream.yahoo.co.jp/message/1003318/3318'
     """
     return "http://textream.yahoo.co.jp/message/100" + seed_num + "/" + seed_num
