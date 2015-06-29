@@ -108,11 +108,8 @@ def test():
     Doctestを走らせるための関数
     ArgParseで--debugオプション時に発動。
     """
-    import sys
     import doctest
     doctest.testmod()
-
-    sys.exit(0)
 
 
 def debug(args):
