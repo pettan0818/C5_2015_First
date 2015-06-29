@@ -17,6 +17,7 @@
 import sys
 import time
 import cPickle
+import pandas
 from bs4 import BeautifulSoup
 import urllib2
 
@@ -43,7 +44,6 @@ def url_generator_thread_plus(stock_num, thread_num):
     return "http://textream.yahoo.co.jp/message/100" + stock_num + "/" + stock_num + "/" + thread_num
 
 
-
 def previous_url_parser(site_data):
     """
     より前の発言のURLを取得
@@ -59,23 +59,23 @@ def comment_parser(site_data):
     """
     comment_list = [x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]
 
-    return comment_list
+    # 要コメント
+    contributed_time = [x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]
 
+    positive_vote = [x.a.span.text for x in site_data.findAll("li", class_="positive")]
 
-def output_file_maker(result_list, output_file_name):
-    """
-    出力用コード
-    """
-    output_con = file(output_file_name, 'w')
+    negative_vote = [x.a.span.text for x in site_data.findAll("li", class_="negative")]
 
-    [output_con.writelines([line + '\n' for line in x]) for x in result_list]
+    binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote}
+
+    return pandas.DataFrame(data=binding_data, index=None, columns=["comments", "time", "positive", "negative"])
 
 
 def main():
     """
     argparser対応を進めるのでメイン関数処理は、こちらに移行させる。
     """
-    comment_result = []
+    comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
 
     stock_num = sys.argv[1]
     output_file_name = sys.argv[2]
@@ -84,30 +84,27 @@ def main():
 
     first_data = data_downloader(seed_url)
 
-    comment_result.append(comment_parser(first_data))
+    comment_dataframe = pandas.concat([comment_dataframe, comment_parser(first_data)])
 
     next_target_url = previous_url_parser(first_data)
 
     while True:
         site_data_in_loop = data_downloader(next_target_url)
 
-        comment_result.append(comment_parser(site_data_in_loop))
+        comment_dataframe = pandas.concat([comment_dataframe, comment_parser(site_data_in_loop)])
 
         try:
             next_target_url = previous_url_parser(site_data_in_loop)
         except AttributeError:
             break
 
-        print comment_result
-
-        print next_target_url
+        print "next page is %s" % next_target_url
 
         time.sleep(10)
 
-    cPickle.dump(comment_result, file("test.dump", 'w'))
+    cPickle.dump(comment_dataframe, file("test.dump", 'w'))
 
-    output_file_maker(comment_result, output_file_name)
-
+    comment_dataframe.to_csv(output_file_name, index=None)
 
 def debug():
     """
