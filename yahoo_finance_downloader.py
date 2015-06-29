@@ -14,7 +14,6 @@
 #
 """
 
-import sys
 import time
 import cPickle
 import pandas
@@ -71,14 +70,11 @@ def comment_parser(site_data):
     return pandas.DataFrame(data=binding_data, index=None, columns=["comments", "time", "positive", "negative"])
 
 
-def main():
+def main(stock_num, output_file_name):
     """
     argparser対応を進めるのでメイン関数処理は、こちらに移行させる。
     """
     comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
-
-    stock_num = sys.argv[1]
-    output_file_name = sys.argv[2]
 
     seed_url = url_generator_without_thread(stock_num)
 
@@ -106,16 +102,49 @@ def main():
 
     comment_dataframe.to_csv(output_file_name, index=None)
 
-def debug():
+
+def test():
     """
     Doctestを走らせるための関数
     ArgParseで--debugオプション時に発動。
     """
+    import sys
     import doctest
     doctest.testmod()
+
+    sys.exit(0)
+
+
+def debug(args):
+    """
+    Loggingを有効化する。
+    """
+    import logging
+
+    logging.basicConfig(filename="debug.log", level=logging.DEBUG)
+
+    main(args.stock_num, args.output_file_name)
 
 
 if __name__ == '__main__':
     import argparse
 
-    main()
+    PARSER = argparse.ArgumentParser(description="このアプリケーションは、テキストリームから指定の株式番号のスレッド書き込みをダウンロードします。", epilog="Made by pettan0818")
+    PARSER.add_argument("-t", "--test", action="store_true", help="process doctest")
+
+    TEST_OR_NOT = PARSER.parse_known_args()
+
+    if TEST_OR_NOT[0].test is True:
+        test()
+
+    PARSER.add_argument("stock_num")
+    PARSER.add_argument("output_file_name")
+
+    PARSER.add_argument("-d", "--debug", action="store_true", help="enter debugmode")
+
+    ARGS = PARSER.parse_args()
+
+    if ARGS.debug is True:
+        debug(ARGS)
+    else:
+        main(ARGS.stock_num, ARGS.output_file_name)
