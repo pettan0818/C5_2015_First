@@ -56,14 +56,14 @@ def comment_parser(site_data):
     """
     ページ内の発言をパースしてリストにして返す。
     """
-    comment_list = [x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]
+    comment_list = list(reversed([x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]))
 
     # 要コメント
-    contributed_time = [x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]
+    contributed_time = list(reversed([x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]))
 
-    positive_vote = [x.a.span.text for x in site_data.findAll("li", class_="positive")]
+    positive_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="positive")]))
 
-    negative_vote = [x.a.span.text for x in site_data.findAll("li", class_="negative")]
+    negative_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="negative")]))
 
     binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote}
 
