@@ -93,29 +93,22 @@ def main(args):
     comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
 
     # 株式番号を元に初回処理対象URLを決定
-    seed_url = url_generator_without_thread(stock_num)
-
-    # 初回処理対象のページデータをダウンロード
-    print "next page is %s" % seed_url
-    first_data = data_downloader(seed_url)
-
-    # 初回データを結果格納用のデータフレームに格納
-    comment_dataframe = pandas.concat([comment_dataframe, comment_parser(first_data)])
-
-    # 次の発言を取りに行くために、次のページのリンクを抽出
-    next_target_url = previous_url_parser(first_data)
+    target_url = url_generator_without_thread(stock_num)
 
     while True:
-        site_data_in_loop = data_downloader(next_target_url)
+        print "target page is %s" % target_url
 
+        # ページデータのダウンロード
+        site_data_in_loop = data_downloader(target_url)
+
+        # 結果格納用のデータフレームに格納
         comment_dataframe = pandas.concat([comment_dataframe, comment_parser(site_data_in_loop)])
 
+        # 次の発言を取りに行くために、次ページリンクを抽出
         try:
-            next_target_url = previous_url_parser(site_data_in_loop)
-        except AttributeError:
+            target_url = previous_url_parser(site_data_in_loop)
+        except AttributeError:  # 処理中のページに「前のページへ」が無くなったとき
             break
-
-        print "next page is %s" % next_target_url
 
         time.sleep(10)
 
@@ -141,9 +134,9 @@ if __name__ == '__main__':
     import argparse
 
     PARSER = argparse.ArgumentParser(description="このアプリケーションは、テキストリームから指定の株式番号のスレッド書き込みをダウンロードします。", epilog="Made by pettan0818")
-    PARSER.add_argument("stock_num", type=int)
+    PARSER.add_argument("stock_num", type=str)
     PARSER.add_argument("output_file_name")
-    PARSER.add_argument("thread_length", default=1)
+    PARSER.add_argument("-t", nargs=1, type=int, default=1)
     PARSER.add_argument("-d", "--debug", action="store_true", help="enter debugmode")
 
     ARGS = PARSER.parse_args()
