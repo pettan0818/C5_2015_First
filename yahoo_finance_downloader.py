@@ -21,26 +21,35 @@ from bs4 import BeautifulSoup
 import urllib2
 
 
-def data_downloader(target_url):
-    """
-    BeautifulSoupでパースしたHTMLデータを返す。
-    """
-    return BeautifulSoup(urllib2.urlopen(target_url))
-
-
-def url_generator_without_thread(seed_num):
+def seed_url_generator(stock_num):
     """
     >>> url_generator_without_thread("3318")
     'http://textream.yahoo.co.jp/message/1003318/3318'
     """
-    return "http://textream.yahoo.co.jp/message/100" + seed_num + "/" + seed_num
+    return "http://textream.yahoo.co.jp/message/100" + str(stock_num) + "/" + str(stock_num)
 
 
 def url_generator_thread_plus(stock_num, thread_num):
     """
     スレッド番号と株式番号からTextreamのホームアドレスを作成
     """
-    return "http://textream.yahoo.co.jp/message/100" + stock_num + "/" + stock_num + "/" + thread_num
+    return "http://textream.yahoo.co.jp/message/100" + str(stock_num) + "/" + str(stock_num) + "/" + str(thread_num)
+
+
+def targetthreads_urllist_generator(stock_num, start_thread_num, thread_length):
+    """
+    株式番号・起点となるスレッド番号・必要なスレッドの長さを元に、
+    スレッドリストを作成
+    >>> target_threads_urllist_generator(1662, 2, 1)
+
+    >>> target_threads_urllist_generator(1662, 2, 2)
+
+    >>> target_threads_urllist_generator(1662, 2, 10)
+
+    """
+    target_numbers = range(start_thread_num, start_thread_num - thread_length, -1)
+
+    return [url_generator_thread_plus(stock_num, x) for x in target_numbers if x > 0]
 
 
 def previous_url_parser(site_data):
@@ -81,39 +90,90 @@ def comment_parser(site_data):
     return pandas.DataFrame(data=binding_data, index=None, columns=["comments", "time", "positive", "negative"])
 
 
+class DataFetcher(object):
+    """
+    テキストリームからデータを
+    ・URLの特定
+    ・ダウンロード
+    ・必要要素の抽出
+    するクラス
+    """
+    def __init__(self, args):
+        """
+        初期化
+        ・クラス内プロパティの生成
+        """
+        # 引数の処理
+        self.process_thread_num = args.thread_num
+        self.stock_num = args.stock_num
+        self.output_file_name = args.output_file_name
+        self.dump_file_name = "test.dump"
+
+        # スレッド現在番号の確認
+        self.seed_thread = 0
+        # 結果の格納用のデータフレームを初期化
+        self.comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
+
+    def bootstrapper(self):
+        """
+        一括処理を行うためのブートストラップ
+        """
+        self.checker()
+
+        seed_list = targetthreads_urllist_generator(self.stock_num, self.seed_thread, self.process_thread_num)
+
+        for seed_url in seed_list:
+            self.thread_processor(seed_url)
+
+        cPickle.dump(self.comment_dataframe, file(self.dump_file_name, 'w'))
+        self.comment_dataframe.to_csv(self.output_file_name, index=None)
+
+    def thread_processor(self, target_url):
+        """
+        指定のシードURLから始めて、そのスレッド全体を取得する。
+        """
+        while True:
+            print "target page is %s" % target_url
+
+            # ページデータのダウンロード
+            site_data_in_loop = BeautifulSoup(urllib2.urlopen(target_url))
+
+            # 結果格納用のデータフレームに格納
+            self.comment_dataframe = pandas.concat([self.comment_dataframe, comment_parser(site_data_in_loop)])
+
+            # 次の発言を取りに行くために、次ページリンクを抽出
+            try:
+                target_url = previous_url_parser(site_data_in_loop)
+            except AttributeError:  # 処理中のページに「前のページへ」が無くなったとき
+                break
+
+            time.sleep(10)
+
+    def checker(self):
+        """
+        ・初期アドレスの実在性確認
+        ・スレッド番号の確認
+        """
+        checking_url = seed_url_generator(self.stock_num)
+
+        try:
+            checking_site_data = BeautifulSoup(urllib2.urlopen(checking_url))
+        except urllib2.HTTPError as instance:
+            if instance.code == 404:
+                raise urllib2.HTTPError("You select wrong stock number...Maybe...")
+            else:
+                raise urllib2.HTTPError("Something wrong...")
+
+        self.seed_thread = find_my_thread_pos(checking_site_data)
+
+
 def main(args):
     """
     argparser対応を進めるのでメイン関数処理は、こちらに移行させる。
     """
-    # 引数の処理
-    stock_num = args.stock_num
-    output_file_name = args.output_file_name
+    processor = DataFetcher(args)
 
-    # 結果の格納用のデータフレームを初期化
-    comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
-
-    # 株式番号を元に初回処理対象URLを決定
-    target_url = url_generator_without_thread(stock_num)
-
-    while True:
-        print "target page is %s" % target_url
-
-        # ページデータのダウンロード
-        site_data_in_loop = data_downloader(target_url)
-
-        # 結果格納用のデータフレームに格納
-        comment_dataframe = pandas.concat([comment_dataframe, comment_parser(site_data_in_loop)])
-
-        # 次の発言を取りに行くために、次ページリンクを抽出
-        try:
-            target_url = previous_url_parser(site_data_in_loop)
-        except AttributeError:  # 処理中のページに「前のページへ」が無くなったとき
-            break
-
-        time.sleep(10)
-
-    cPickle.dump(comment_dataframe, file("test.dump", 'w'))
-    comment_dataframe.to_csv(output_file_name, index=None)
+    processor.bootstrapper()
 
 
 def debug(args):
@@ -134,12 +194,13 @@ if __name__ == '__main__':
     import argparse
 
     PARSER = argparse.ArgumentParser(description="このアプリケーションは、テキストリームから指定の株式番号のスレッド書き込みをダウンロードします。", epilog="Made by pettan0818")
-    PARSER.add_argument("stock_num", type=str)
+    PARSER.add_argument("stock_num", type=int)
     PARSER.add_argument("output_file_name")
-    PARSER.add_argument("-t", nargs=1, type=int, default=1)
+    PARSER.add_argument("-t", "--thread_num", type=int, default=1, help="if you want to download more than one thread, like '-t 10'")
     PARSER.add_argument("-d", "--debug", action="store_true", help="enter debugmode")
 
     ARGS = PARSER.parse_args()
+    print ARGS
 
     if ARGS.debug is True:
         debug(ARGS)
