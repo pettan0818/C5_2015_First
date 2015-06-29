@@ -15,6 +15,7 @@
 """
 
 import sys
+import pandas
 import numpy
 import mecab_direct_connecter
 import dic_searcher
@@ -25,7 +26,9 @@ if __name__ == '__main__':
     except IndexError:
         TARGET_FILE_NAME = "test.list"
 
-    TEXT_LIST = [text.rstrip('\n') for text in file(TARGET_FILE_NAME, 'r')]
+    #TEXT_LIST = [text.rstrip('\n') for text in file(TARGET_FILE_NAME, 'r')]
+    DATA_LIST = pandas.read_csv(TARGET_FILE_NAME)
+    TEXT_LIST = DATA_LIST.comments
 
     MECAB_EXE = mecab_direct_connecter.MecabMother()
     WORD_OPINION_TELLER = dic_searcher.OpinionDictSearcher("./opinion_dict_shrinked.dic")
