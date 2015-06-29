@@ -45,7 +45,6 @@ def url_generator_thread_plus(stock_num, thread_num):
     return "http://textream.yahoo.co.jp/message/100" + stock_num + "/" + stock_num + "/" + thread_num
 
 
-
 def previous_url_parser(site_data):
     """
     より前の発言のURLを取得
@@ -61,22 +60,16 @@ def comment_parser(site_data):
     """
     comment_list = [x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]
 
-    contributed_time = [x.find("span").a.text for x in site_data.findAll("p", class_="comWriter")]
+    # 要コメント
+    contributed_time = [x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]
 
-    positive_vote = [x.a.span.text for x in sitedata.findAll("li", class_="positive")]
+    positive_vote = [x.a.span.text for x in site_data.findAll("li", class_="positive")]
 
-    negative_vote = [x.a.span.text for x in sitedata.findAll("li", class_="negative")]
+    negative_vote = [x.a.span.text for x in site_data.findAll("li", class_="negative")]
 
-    return comment_list
+    binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote}
 
-
-def output_file_maker(result_list, output_file_name):
-    """
-    出力用コード
-    """
-    output_con = file(output_file_name, 'w')
-
-    [output_con.writelines([line + '\n' for line in x]) for x in result_list]
+    return pandas.DataFrame(data=binding_data, columns=["comments", "time", "positive", "negative"])
 
 
 def main():
@@ -90,7 +83,7 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-    COMMENT_RESULT = []
+    COMMENT_DATAFRAME = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
 
     STOCK_NUM = sys.argv[1]
     OUTPUT_FILE_NAME = sys.argv[2]
@@ -99,26 +92,24 @@ if __name__ == '__main__':
 
     FIRST_DATA = data_downloader(SEED_URL)
 
-    COMMENT_RESULT.append(comment_parser(FIRST_DATA))
+    COMMENT_DATAFRAME = pandas.concat([COMMENT_DATAFRAME, comment_parser(FIRST_DATA)])
 
     NEXT_TARGET_URL = previous_url_parser(FIRST_DATA)
 
     while True:
         SITE_DATA_IN_LOOP = data_downloader(NEXT_TARGET_URL)
 
-        COMMENT_RESULT.append(comment_parser(SITE_DATA_IN_LOOP))
+        COMMENT_DATAFRAME = pandas.concat([COMMENT_DATAFRAME, comment_parser(SITE_DATA_IN_LOOP)])
 
         try:
             NEXT_TARGET_URL = previous_url_parser(SITE_DATA_IN_LOOP)
         except AttributeError:
             break
 
-        print COMMENT_RESULT
-
-        print NEXT_TARGET_URL
+        print "Next page is %s" % NEXT_TARGET_URL
 
         time.sleep(10)
 
-    cPickle.dump(COMMENT_RESULT, file("test.dump", 'w'))
+    #cPickle.dump(COMMENT_DATAFRAME, file("test.dump", 'w'))
 
-    output_file_maker(COMMENT_RESULT, OUTPUT_FILE_NAME)
+    COMMENT_DATAFRAME.to_csv(OUTPUT_FILE_NAME)
