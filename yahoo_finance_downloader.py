@@ -76,40 +76,47 @@ def main():
     """
     argparser対応を進めるのでメイン関数処理は、こちらに移行させる。
     """
-    pass
+    comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
 
+    stock_num = sys.argv[1]
+    output_file_name = sys.argv[2]
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    seed_url = url_generator_without_thread(stock_num)
 
-    COMMENT_DATAFRAME = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
+    first_data = data_downloader(seed_url)
 
-    STOCK_NUM = sys.argv[1]
-    OUTPUT_FILE_NAME = sys.argv[2]
+    comment_dataframe = pandas.concat([comment_dataframe, comment_parser(first_data)])
 
-    SEED_URL = url_generator_without_thread(STOCK_NUM)
-
-    FIRST_DATA = data_downloader(SEED_URL)
-
-    COMMENT_DATAFRAME = pandas.concat([COMMENT_DATAFRAME, comment_parser(FIRST_DATA)])
-
-    NEXT_TARGET_URL = previous_url_parser(FIRST_DATA)
+    next_target_url = previous_url_parser(first_data)
 
     while True:
-        SITE_DATA_IN_LOOP = data_downloader(NEXT_TARGET_URL)
+        site_data_in_loop = data_downloader(next_target_url)
 
-        COMMENT_DATAFRAME = pandas.concat([COMMENT_DATAFRAME, comment_parser(SITE_DATA_IN_LOOP)])
+        comment_dataframe = pandas.concat([comment_dataframe, comment_parser(site_data_in_loop)])
 
         try:
-            NEXT_TARGET_URL = previous_url_parser(SITE_DATA_IN_LOOP)
+            next_target_url = previous_url_parser(site_data_in_loop)
         except AttributeError:
             break
 
-        print "Next page is %s" % NEXT_TARGET_URL
+        print "next page is %s" % next_target_url
 
         time.sleep(10)
 
-    cPickle.dump(COMMENT_DATAFRAME, file("test.dump", 'w'))
+    cPickle.dump(comment_dataframe, file("test.dump", 'w'))
 
-    COMMENT_DATAFRAME.to_csv(OUTPUT_FILE_NAME, index=None)
+    comment_dataframe.to_csv(output_file_name, index=None)
+
+def debug():
+    """
+    Doctestを走らせるための関数
+    ArgParseで--debugオプション時に発動。
+    """
+    import doctest
+    doctest.testmod()
+
+
+if __name__ == '__main__':
+    import argparse
+
+    main()
