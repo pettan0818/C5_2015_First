@@ -69,7 +69,7 @@ def comment_parser(site_data):
 
     binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote}
 
-    return pandas.DataFrame(data=binding_data, columns=["comments", "time", "positive", "negative"])
+    return pandas.DataFrame(data=binding_data, index=None, columns=["comments", "time", "positive", "negative"])
 
 
 def main():
@@ -110,6 +110,6 @@ if __name__ == '__main__':
 
         time.sleep(10)
 
-    #cPickle.dump(COMMENT_DATAFRAME, file("test.dump", 'w'))
+    cPickle.dump(COMMENT_DATAFRAME, file("test.dump", 'w'))
 
-    COMMENT_DATAFRAME.to_csv(OUTPUT_FILE_NAME)
+    COMMENT_DATAFRAME.to_csv(OUTPUT_FILE_NAME, index=None)
