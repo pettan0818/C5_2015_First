@@ -9,3 +9,6 @@
 *.pyc
 *.list
 *.dump
+
+# CSV is now ignored
+*.csv
