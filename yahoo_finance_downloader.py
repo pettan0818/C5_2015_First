@@ -106,6 +106,7 @@ class DataFetcher(object):
         # 引数の処理
         self.process_thread_num = args.thread_num
         self.stock_num = args.stock_num
+        self.excel_file_name = args.extend_excel_file
         self.output_file_name = args.output_file_name
         self.wait_time = args.wait_time
         self.dump_name = args.dump_name
@@ -128,6 +129,8 @@ class DataFetcher(object):
 
         cPickle.dump(self.comment_dataframe, file(self.dump_name, 'w'))
         self.comment_dataframe.to_csv(self.output_file_name, index=None)
+        if self.excel_file_name is not None:
+            self.comment_dataframe.to_excel(self.excel_file_name, str(self.stock_num))
 
     def thread_processor(self, target_url):
         """
@@ -197,6 +200,7 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description="このアプリケーションは、テキストリームから指定の株式番号のスレッド書き込みをダウンロードします。", epilog="Made by pettan0818")
     PARSER.add_argument("stock_num", type=int)
     PARSER.add_argument("output_file_name")
+    PARSER.add_argument("-e", "--extend_excel_file", type=str, help="If you want to output file by excel, please input filename like '-e test.xlsx'")
     PARSER.add_argument("-n", "--dump_name", type=str, default="test.dump", help="Set dump name, if you want. default name is test.dump")
     PARSER.add_argument("-s", "--wait_time", type=int, default=5, help="[Do not use] If you have to fetch imaginally high speed, set option small figure")
     PARSER.add_argument("-t", "--thread_num", type=int, default=1, help="if you want to download more than one thread, like '-t 10'")
