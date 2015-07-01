@@ -12,3 +12,4 @@
 
 # CSV is now ignored
 *.csv
+*.xlsx
