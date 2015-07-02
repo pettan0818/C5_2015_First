@@ -139,10 +139,8 @@ class DataFetcher(object):
         while True:
             print "target page is %s" % target_url
 
-            # ページデータのダウンロード
             site_data_in_loop = BeautifulSoup(urllib2.urlopen(target_url))
 
-            # 結果格納用のデータフレームに格納
             self.comment_dataframe = pandas.concat([self.comment_dataframe, comment_parser(site_data_in_loop)])
 
             # 次の発言を取りに行くために、次ページリンクを抽出
