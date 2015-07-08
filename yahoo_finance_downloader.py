@@ -72,6 +72,15 @@ def find_my_thread_pos(site_data):
     return thread_num + 1
 
 
+def emotional_analytics(comment):
+    """
+    文字列を受け取り、極性分析を行います。
+    引数: comment(str)
+    返り値: 感情点数(float)
+    """
+    pass
+
+
 def comment_parser(site_data):
     """
     ページ内の発言をパースしてリストにして返す。
@@ -81,9 +90,15 @@ def comment_parser(site_data):
     # 要コメント
     contributed_time = list(reversed([x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]))
 
+    contributed_time_with_out_time = [x.split(" ")[0] for x in contributed_time]
+
+    contributed_time = contributed_time_with_out_time
+
     positive_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="positive")]))
 
     negative_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="negative")]))
+
+    emotional_point = [emotional_analytics(x) for x in comment_list]
 
     binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote}
 
