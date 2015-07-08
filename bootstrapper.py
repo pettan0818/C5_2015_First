@@ -44,8 +44,8 @@ if __name__ == '__main__':
 
         opt_list = [WORD_OPINION_TELLER.tell_word_score(word) for word in TARGET_WORDS]
 
-        print opt_list
-        print numpy.mean(opt_list)
+        # print opt_list
+        # print numpy.mean(opt_list)
 
         FULL_EXP.append(numpy.mean(opt_list))
 
