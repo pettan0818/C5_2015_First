@@ -16,9 +16,12 @@
 
 import time
 import cPickle
+import numpy
 import pandas
 from bs4 import BeautifulSoup
 import urllib2
+import mecab_direct_connecter
+import dic_searcher
 
 
 def seed_url_generator(stock_num):
@@ -72,37 +75,32 @@ def find_my_thread_pos(site_data):
     return thread_num + 1
 
 
-def emotional_analytics(comment):
+class Emotional_Analytics(object):
     """
     文字列を受け取り、極性分析を行います。
     引数: comment(str)
     返り値: 感情点数(float)
     """
-    pass
+    def __init__(self):
 
+        dic_positon = "./opinion_dict_shrinked.dic"
 
-def comment_parser(site_data):
-    """
-    ページ内の発言をパースしてリストにして返す。
-    """
-    comment_list = list(reversed([x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]))
+        self.mecab_exe = mecab_direct_connecter.MecabMother()
+        self.comment_opinion_teller = dic_searcher.OpinionDictSearcher(dic_positon)
 
-    # 要コメント
-    contributed_time = list(reversed([x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]))
+        self.target_part = ["名詞", "動詞", "形容詞", "副詞"]
 
-    contributed_time_with_out_time = [x.split(" ")[0] for x in contributed_time]
+    def emotional_point(self, comment):
+        """
+        上記処理をブートストラップに。
+        """
+        self.mecab_exe.set_text_to_parse(comment)
+        self.mecab_exe.unknown_word_buster_by_parts()
+        extracted_comment = self.mecab_exe.extract_category_originalshape(self.target_part)
 
-    contributed_time = contributed_time_with_out_time
+        point_list = [self.comment_opinion_teller.tell_word_score(x) for x in extracted_comment]
 
-    positive_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="positive")]))
-
-    negative_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="negative")]))
-
-    emotional_point = [emotional_analytics(x) for x in comment_list]
-
-    binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote}
-
-    return pandas.DataFrame(data=binding_data, index=None, columns=["comments", "time", "positive", "negative"])
+        return numpy.mean(point_list)
 
 
 class DataFetcher(object):
@@ -126,10 +124,13 @@ class DataFetcher(object):
         self.wait_time = args.wait_time
         self.dump_name = args.dump_name
 
+        # 極性分析処理
+        self.emotional_exe = Emotional_Analytics()
+
         # スレッド現在番号の確認
         self.seed_thread = 0
         # 結果の格納用のデータフレームを初期化
-        self.comment_dataframe = pandas.DataFrame(columns=["comments", "time", "positive", "negative"])
+        self.comment_dataframe = pandas.DataFrame()
 
     def bootstrapper(self):
         """
@@ -156,7 +157,7 @@ class DataFetcher(object):
 
             site_data_in_loop = BeautifulSoup(urllib2.urlopen(target_url))
 
-            self.comment_dataframe = pandas.concat([self.comment_dataframe, comment_parser(site_data_in_loop)])
+            self.comment_dataframe = pandas.concat([self.comment_dataframe, self.comment_parser(site_data_in_loop)])
 
             # 次の発言を取りに行くために、次ページリンクを抽出
             try:
@@ -165,6 +166,28 @@ class DataFetcher(object):
                 break
 
             time.sleep(self.wait_time)
+
+    def comment_parser(self, site_data):
+        """
+        ページ内の発言をパースしてリストにして返す。
+        """
+        comment_list = list(reversed([x.text.strip().replace('\n', '').replace('\r', '') for x in site_data.findAll("p", class_="comText")]))
+
+        # 要コメント
+        contributed_time = list(reversed([x.findAll("a")[-1].text for x in site_data.findAll("p", class_="comWriter")]))
+        contributed_time_with_out_time = [x.split(" ")[0] for x in contributed_time]
+        contributed_time = contributed_time_with_out_time
+
+        positive_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="positive")]))
+
+        negative_vote = list(reversed([x.a.span.text for x in site_data.findAll("li", class_="negative")]))
+
+        emotional_point = [self.emotional_exe.emotional_point(str(x)) for x in comment_list]
+
+        binding_data = {'comments': comment_list, 'time': contributed_time, 'positive': positive_vote, 'negative': negative_vote, 'emotion_score': emotional_point}
+
+        return pandas.DataFrame(data=binding_data, index=None, columns=["comments", "time", "positive", "negative", "emotion_score"])
+
 
     def checker(self):
         """
