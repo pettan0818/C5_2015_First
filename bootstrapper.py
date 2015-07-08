@@ -49,4 +49,4 @@ if __name__ == '__main__':
 
         FULL_EXP.append(numpy.mean(opt_list))
 
-    print "Total Exp: %s" % str(sum(numpy.nan_to_num(FULL_EXP)))
+    print "Total Exp: %s" % str(numpy.mean(numpy.nan_to_num(FULL_EXP)))
